@@ -17,21 +17,24 @@ interface IProps {
   food: IFoodPlate;
   handleDelete: (id: number) => {};
   handleEditFood: (food: IFoodPlate) => void;
+  handleUpdateFoodAvailable: (id: number, availability: boolean) => void;
 }
 
 const Food: React.FC<IProps> = ({
   food,
   handleDelete,
   handleEditFood,
+  handleUpdateFoodAvailable,
 }: IProps) => {
   const [isAvailable, setIsAvailable] = useState(food.available);
 
   async function toggleAvailable(): Promise<void> {
-    // TODO UPDATE STATUS (available)
+    handleUpdateFoodAvailable(food.id, !isAvailable);
+    setIsAvailable(!isAvailable);
   }
 
   function setEditingFood(): void {
-    // TODO - SET THE ID OF THE CURRENT ITEM TO THE EDITING FOOD AND OPEN MODAL
+    handleEditFood(food);
   }
 
   return (
@@ -74,7 +77,7 @@ const Food: React.FC<IProps> = ({
             <input
               id={`available-switch-${food.id}`}
               type="checkbox"
-              checked={isAvailable}
+              checked={isAvailable || false}
               onChange={toggleAvailable}
               data-testid={`change-status-food-${food.id}`}
             />

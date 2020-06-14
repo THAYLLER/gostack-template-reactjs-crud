@@ -27,7 +27,9 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function loadFoods(): Promise<void> {
-      // TODO LOAD FOODS
+      const { data } = await api.get<IFoodPlate[]>('/foods');
+
+      setFoods(data);
     }
 
     loadFoods();
@@ -37,20 +39,40 @@ const Dashboard: React.FC = () => {
     food: Omit<IFoodPlate, 'id' | 'available'>,
   ): Promise<void> {
     try {
-      // TODO ADD A NEW FOOD PLATE TO THE API
+      const { data } = await api.post<IFoodPlate>('/foods', {
+        ...food,
+        available: true,
+      });
+      setFoods([data, ...foods]);
     } catch (err) {
       console.log(err);
     }
   }
 
-  async function handleUpdateFood(
-    food: Omit<IFoodPlate, 'id' | 'available'>,
+  async function handleUpdateFood(food: IFoodPlate): Promise<void> {
+    const { data } = await api.put<IFoodPlate>(`/foods/${food.id}`, food);
+
+    const foodIndex = foods.findIndex(f => f.id === data.id);
+    foods[foodIndex] = data;
+
+    setFoods(foods);
+  }
+
+  async function handleUpdateFoodAvailable(
+    id: number,
+    availability: boolean,
   ): Promise<void> {
-    // TODO UPDATE A FOOD PLATE ON THE API
+    const current = foods.find(f => f.id === id);
+    if (current) {
+      current.available = availability;
+      handleUpdateFood(current);
+    }
   }
 
   async function handleDeleteFood(id: number): Promise<void> {
-    // TODO DELETE A FOOD PLATE FROM THE API
+    await api.delete(`/foods/${id}`);
+
+    setFoods(foods.filter(f => f.id !== id));
   }
 
   function toggleModal(): void {
@@ -62,7 +84,8 @@ const Dashboard: React.FC = () => {
   }
 
   function handleEditFood(food: IFoodPlate): void {
-    // TODO SET THE CURRENT EDITING FOOD ID IN THE STATE
+    toggleEditModal();
+    setEditingFood(food);
   }
 
   return (
@@ -88,6 +111,7 @@ const Dashboard: React.FC = () => {
               food={food}
               handleDelete={handleDeleteFood}
               handleEditFood={handleEditFood}
+              handleUpdateFoodAvailable={handleUpdateFoodAvailable}
             />
           ))}
       </FoodsContainer>
